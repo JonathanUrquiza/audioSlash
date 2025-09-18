@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AudioSlash - Extractor de Audio</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-music"></i> AudioSlash</h1>
+            <p>Extrae audio de tus videos de forma rápida y sencilla</p>
+        </header>
+
+        <main>
+            <!-- Zona de carga -->
+            <div id="upload-area" class="upload-area">
+                <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                <h3>Arrastra tu video aquí</h3>
+                <p>o haz clic para seleccionar</p>
+                <input type="file" id="file-input" accept=".mp4,.avi,.mov,.mkv,.wmv,.flv,.webm">
+                <div class="supported-formats">
+                    <small>Formatos soportados: MP4, AVI, MOV, MKV, WMV, FLV, WEBM</small>
+                </div>
+            </div>
+
+            <!-- Progreso -->
+            <div id="progress-section" class="progress-section" style="display: none;">
+                <div class="progress-header">
+                    <h3>Procesando video...</h3>
+                    <div class="progress-bar">
+                        <div id="progress-fill" class="progress-fill"></div>
+                    </div>
+                    <div id="progress-text" class="progress-text">0%</div>
+                </div>
+                <div id="progress-message" class="progress-message">
+                    Iniciando procesamiento...
+                </div>
+            </div>
+
+            <!-- Resultado -->
+            <div id="result-section" class="result-section" style="display: none;">
+                <div class="result-success">
+                    <i class="fas fa-check-circle"></i>
+                    <h3>¡Audio extraído exitosamente!</h3>
+                    <button id="download-btn" class="download-btn">
+                        <i class="fas fa-download"></i> Descargar MP3
+                    </button>
+                </div>
+            </div>
+
+            <!-- Error -->
+            <div id="error-section" class="error-section" style="display: none;">
+                <div class="result-error">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h3>Error en el procesamiento</h3>
+                    <p id="error-message">Ha ocurrido un error desconocido</p>
+                    <button id="retry-btn" class="retry-btn">
+                        <i class="fas fa-redo"></i> Intentar de nuevo
+                    </button>
+                </div>
+            </div>
+
+            <!-- Historial de archivos -->
+            <div class="history-section">
+                <h3><i class="fas fa-history"></i> Archivos de audio</h3>
+                <div id="audio-list" class="audio-list">
+                    <p class="no-files">No hay archivos de audio aún</p>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>AudioSlash © 2024 - Desarrollado con ❤️</p>
+            <p>Desarrollado por Jonathan Urquiza</p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
