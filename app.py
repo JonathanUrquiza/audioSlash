@@ -185,6 +185,58 @@ def list_audios():
     except Exception as e:
         return jsonify({'error': f'Error listando archivos: {str(e)}'}), 500
 
+@app.route('/delete/<filename>')
+def delete_audio(filename):
+    """Borrar un archivo de audio específico"""
+    try:
+        audio_path = AUDIO_FOLDER / filename
+        if audio_path.exists():
+            audio_path.unlink()
+            print(f"🗑️ Archivo eliminado: {filename}")
+            return jsonify({
+                'status': 'success',
+                'message': f'Archivo {filename} eliminado correctamente'
+            })
+        else:
+            return jsonify({'error': 'Archivo no encontrado'}), 404
+    except Exception as e:
+        return jsonify({'error': f'Error eliminando archivo: {str(e)}'}), 500
+
+@app.route('/delete-all-audios', methods=['POST'])
+def delete_all_audios():
+    """Borrar todos los archivos de audio y limpiar caché"""
+    try:
+        deleted_files = 0
+        
+        # Eliminar todos los archivos MP3
+        for audio_file in AUDIO_FOLDER.glob('*.mp3'):
+            try:
+                audio_file.unlink()
+                deleted_files += 1
+                print(f"🗑️ Archivo eliminado: {audio_file.name}")
+            except:
+                pass
+        
+        # Limpiar archivos en uploads
+        for upload_file in UPLOAD_FOLDER.glob('*'):
+            try:
+                upload_file.unlink()
+            except:
+                pass
+        
+        # Limpiar archivos de progreso orfanos
+        global progreso_jobs
+        progreso_jobs.clear()
+        
+        print(f"🧹 Todos los audios eliminados: {deleted_files} archivos")
+        return jsonify({
+            'status': 'success',
+            'files_deleted': deleted_files,
+            'message': f'Se eliminaron {deleted_files} archivos de audio y se limpió el caché'
+        })
+    except Exception as e:
+        return jsonify({'error': f'Error eliminando archivos: {str(e)}'}), 500
+
 @app.route('/clear-cache', methods=['POST'])
 def clear_server_cache():
     """Limpiar archivos temporales del servidor"""

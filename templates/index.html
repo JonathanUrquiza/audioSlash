@@ -72,7 +72,12 @@
 
             <!-- Historial de archivos -->
             <div class="history-section">
-                <h3><i class="fas fa-history"></i> Archivos de audio</h3>
+                <div class="history-header">
+                    <h3><i class="fas fa-history"></i> Archivos de audio</h3>
+                    <button id="delete-all-btn" class="delete-all-btn" style="display: none;">
+                        <i class="fas fa-trash-alt"></i> Borrar todos
+                    </button>
+                </div>
                 <div id="audio-list" class="audio-list">
                     <p class="no-files">No hay archivos de audio aún</p>
                 </div>

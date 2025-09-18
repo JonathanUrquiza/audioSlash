@@ -15,6 +15,7 @@ const errorMessage = document.getElementById('error-message');
 const downloadBtn = document.getElementById('download-btn');
 const retryBtn = document.getElementById('retry-btn');
 const audioList = document.getElementById('audio-list');
+const deleteAllBtn = document.getElementById('delete-all-btn');
 
 // Inicialización
 document.addEventListener('DOMContentLoaded', function() {
@@ -45,6 +46,7 @@ function setupEventListeners() {
     
     // Botones
     retryBtn.addEventListener('click', resetInterface);
+    deleteAllBtn.addEventListener('click', deleteAllAudios);
 }
 
 function handleDragOver(e) {
@@ -213,8 +215,12 @@ function loadAudioList() {
 function displayAudioList(audios) {
     if (audios.length === 0) {
         audioList.innerHTML = '<p class="no-files">No hay archivos de audio aún</p>';
+        deleteAllBtn.style.display = 'none';
         return;
     }
+    
+    // Mostrar el botón "Borrar todos" si hay archivos
+    deleteAllBtn.style.display = 'flex';
     
     const audioItems = audios.map(audio => `
         <div class="audio-item" data-filename="${audio.name}">
@@ -225,9 +231,14 @@ function displayAudioList(audios) {
                     <div class="audio-size">${formatFileSize(audio.size)}</div>
                 </div>
             </div>
-            <a href="${audio.url}" class="download-link" onclick="handleDownload('${audio.name}')">
-                <i class="fas fa-download"></i> Descargar
-            </a>
+            <div class="audio-actions">
+                <a href="${audio.url}" class="download-link" onclick="handleDownload('${audio.name}')">
+                    <i class="fas fa-download"></i> Descargar
+                </a>
+                <button class="delete-btn" onclick="deleteAudio('${audio.name}')">
+                    <i class="fas fa-trash"></i> Borrar
+                </button>
+            </div>
         </div>
     `).join('');
     
@@ -250,16 +261,20 @@ function handleDownload(filename) {
     }, 2000);
 }
 
-function showTemporaryMessage(message) {
+function showTemporaryMessage(message, type = 'success') {
     // Crear elemento de mensaje temporal
     const messageDiv = document.createElement('div');
     messageDiv.className = 'temporary-message';
     messageDiv.textContent = message;
+    
+    // Definir colores según el tipo
+    const backgroundColor = type === 'error' ? '#f44336' : '#4CAF50';
+    
     messageDiv.style.cssText = `
         position: fixed;
         top: 20px;
         right: 20px;
-        background: #4CAF50;
+        background: ${backgroundColor};
         color: white;
         padding: 15px 20px;
         border-radius: 10px;
@@ -270,7 +285,8 @@ function showTemporaryMessage(message) {
     
     document.body.appendChild(messageDiv);
     
-    // Eliminar mensaje después de 3 segundos
+    // Eliminar mensaje después de 3 segundos (4 segundos para errores)
+    const timeout = type === 'error' ? 4000 : 3000;
     setTimeout(() => {
         messageDiv.style.animation = 'slideOut 0.3s ease';
         setTimeout(() => {
@@ -278,7 +294,7 @@ function showTemporaryMessage(message) {
                 messageDiv.parentNode.removeChild(messageDiv);
             }
         }, 300);
-    }, 3000);
+    }, timeout);
 }
 
 function formatFileSize(bytes) {
@@ -333,6 +349,82 @@ function clearCacheAndReset() {
     });
     
     console.log('🧹 Caché limpiado y aplicación reseteada');
+}
+
+function deleteAudio(filename) {
+    // Confirmar antes de borrar
+    if (!confirm(`¿Estás seguro de que quieres borrar "${filename}"?`)) {
+        return;
+    }
+    
+    // Mostrar indicador de carga en el botón
+    const audioItem = document.querySelector(`[data-filename="${filename}"]`);
+    const deleteBtn = audioItem?.querySelector('.delete-btn');
+    
+    if (deleteBtn) {
+        deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Borrando...';
+        deleteBtn.disabled = true;
+    }
+    
+    fetch(`/delete/${filename}`)
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        
+        // Mostrar mensaje de éxito
+        showTemporaryMessage(`Archivo "${filename}" eliminado correctamente`);
+        
+        // Recargar la lista
+        loadAudioList();
+    })
+    .catch(error => {
+        console.error('Error borrando archivo:', error);
+        showTemporaryMessage('Error borrando el archivo', 'error');
+        
+        // Restaurar el botón
+        if (deleteBtn) {
+            deleteBtn.innerHTML = '<i class="fas fa-trash"></i> Borrar';
+            deleteBtn.disabled = false;
+        }
+    });
+}
+
+function deleteAllAudios() {
+    // Confirmar antes de borrar todos los archivos
+    if (!confirm('¿Estás seguro de que quieres borrar TODOS los archivos de audio?\n\nEsta acción también limpiará el caché del servidor.')) {
+        return;
+    }
+    
+    // Mostrar indicador de carga en el botón
+    deleteAllBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Borrando...';
+    deleteAllBtn.disabled = true;
+    
+    fetch('/delete-all-audios', {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        
+        // Mostrar mensaje de éxito
+        showTemporaryMessage(`${data.files_deleted} archivos eliminados y caché limpiado`);
+        
+        // Recargar la lista
+        loadAudioList();
+    })
+    .catch(error => {
+        console.error('Error borrando archivos:', error);
+        showTemporaryMessage('Error borrando los archivos', 'error');
+    })
+    .finally(() => {
+        // Restaurar el botón
+        deleteAllBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Borrar todos';
+        deleteAllBtn.disabled = false;
+    });
 }
 
 function clearAllData() {
