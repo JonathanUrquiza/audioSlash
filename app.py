@@ -8,6 +8,7 @@ import uuid
 import json
 from pathlib import Path
 from flask import Flask, render_template, request, jsonify, send_file, url_for
+import datetime
 from werkzeug.utils import secure_filename
 from threading import Thread
 import time
@@ -100,7 +101,8 @@ processor = VideoProcessor()
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    # Agregar timestamp para evitar caché
+    return render_template('index.html', moment=lambda: datetime.datetime.now())
 
 @app.route('/upload', methods=['POST'])
 def upload_video():
@@ -182,6 +184,33 @@ def list_audios():
         return jsonify(audios)
     except Exception as e:
         return jsonify({'error': f'Error listando archivos: {str(e)}'}), 500
+
+@app.route('/clear-cache', methods=['POST'])
+def clear_server_cache():
+    """Limpiar archivos temporales del servidor"""
+    try:
+        cleared_files = 0
+        
+        # Limpiar archivos en uploads
+        for upload_file in UPLOAD_FOLDER.glob('*'):
+            try:
+                upload_file.unlink()
+                cleared_files += 1
+            except:
+                pass
+        
+        # Limpiar archivos de progreso orfanos
+        global progreso_jobs
+        progreso_jobs.clear()
+        
+        print(f"🧹 Cache del servidor limpiado: {cleared_files} archivos eliminados")
+        return jsonify({
+            'status': 'success',
+            'files_cleared': cleared_files,
+            'message': 'Cache del servidor limpiado'
+        })
+    except Exception as e:
+        return jsonify({'error': f'Error limpiando cache: {str(e)}'}), 500
 
 if __name__ == '__main__':
     print("🎬 AudioSlash Web Interface")

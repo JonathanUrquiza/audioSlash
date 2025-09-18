@@ -1,0 +1,11 @@
+{
+    "name": "AudioSlash",
+    "short_name": "AudioSlash", 
+    "description": "Extractor de audio web moderno",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#667eea",
+    "theme_color": "#667eea",
+    "orientation": "portrait-primary",
+    "cache": false
+}

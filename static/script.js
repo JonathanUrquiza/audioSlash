@@ -19,7 +19,18 @@ const audioList = document.getElementById('audio-list');
 // Inicialización
 document.addEventListener('DOMContentLoaded', function() {
     setupEventListeners();
+    clearCacheAndReset();
     loadAudioList();
+});
+
+// Limpiar caché al refrescar la página
+window.addEventListener('beforeunload', function() {
+    clearAllData();
+});
+
+// Resetear completamente al cargar la página
+window.addEventListener('load', function() {
+    clearCacheAndReset();
 });
 
 function setupEventListeners() {
@@ -278,4 +289,67 @@ function formatFileSize(bytes) {
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+function clearCacheAndReset() {
+    // Limpiar localStorage si existe
+    if (typeof(Storage) !== "undefined") {
+        localStorage.clear();
+    }
+    
+    // Limpiar sessionStorage
+    if (typeof(Storage) !== "undefined") {
+        sessionStorage.clear();
+    }
+    
+    // Resetear variables globales
+    currentJobId = null;
+    
+    // Limpiar intervalos activos
+    if (progressInterval) {
+        clearInterval(progressInterval);
+        progressInterval = null;
+    }
+    
+    // Resetear interfaz
+    resetInterface();
+    
+    // Limpiar input de archivo
+    if (fileInput) {
+        fileInput.value = '';
+    }
+    
+    // Remover clases de drag
+    if (uploadArea) {
+        uploadArea.classList.remove('dragover');
+    }
+    
+    // Limpiar mensajes temporales existentes
+    const tempMessages = document.querySelectorAll('.temporary-message');
+    tempMessages.forEach(msg => {
+        if (msg.parentNode) {
+            msg.parentNode.removeChild(msg);
+        }
+    });
+    
+    console.log('🧹 Caché limpiado y aplicación reseteada');
+}
+
+function clearAllData() {
+    // Cancelar cualquier trabajo en progreso
+    if (currentJobId && progressInterval) {
+        clearInterval(progressInterval);
+        console.log('🛑 Trabajo cancelado por recarga de página');
+    }
+    
+    // Limpiar caché del servidor
+    fetch('/clear-cache', {
+        method: 'POST'
+    }).catch(error => {
+        console.log('⚠️ Error limpiando caché del servidor:', error);
+    });
+    
+    // Limpiar datos temporales
+    currentJobId = null;
+    progressInterval = null;
 }

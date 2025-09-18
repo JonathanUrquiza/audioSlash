@@ -1,0 +1,57 @@
+# Archivos de Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Archivos de entorno
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Carpetas de AudioSlash - NO deben subirse a Git
+uploads/
+audios/
+videos_procesados/
+
+# Archivos temporales
+*.tmp
+*.temp
+videos_procesados.txt
+
+# Credenciales de Google Drive
+credentials.json
+token.json
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
