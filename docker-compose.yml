@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  audioslash:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - SECRET_KEY=tu-clave-secreta-super-segura-para-produccion
+      - FLASK_ENV=production
+      - FLASK_DEBUG=false
+      - HOST=0.0.0.0
+      - PORT=5000
+      - MAX_CONTENT_LENGTH=2147483648
+    volumes:
+      # Opcional: persistir archivos entre reinicios del contenedor
+      - ./uploads:/app/uploads
+      - ./audios:/app/audios
+    restart: unless-stopped

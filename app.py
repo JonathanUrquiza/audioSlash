@@ -13,15 +13,20 @@ from werkzeug.utils import secure_filename
 from threading import Thread
 import time
 from moviepy.editor import VideoFileClip
+from dotenv import load_dotenv
+
+# Cargar variables de entorno
+load_dotenv()
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'audioSlash2024'
-# Sin límite de tamaño - procesa videos de cualquier tamaño
-# app.config['MAX_CONTENT_LENGTH'] = None
 
-# Configuración de carpetas
-UPLOAD_FOLDER = Path('uploads')
-AUDIO_FOLDER = Path('audios')
+# Configuración usando variables de entorno con valores por defecto
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'audioSlash2024-cambiar-en-produccion')
+app.config['MAX_CONTENT_LENGTH'] = int(os.getenv('MAX_CONTENT_LENGTH', 0)) or None
+
+# Configuración de carpetas usando variables de entorno
+UPLOAD_FOLDER = Path(os.getenv('UPLOAD_FOLDER', 'uploads'))
+AUDIO_FOLDER = Path(os.getenv('AUDIO_FOLDER', 'audios'))
 ALLOWED_EXTENSIONS = {'.mp4', '.avi', '.mov', '.mkv', '.wmv', '.flv', '.webm'}
 
 # Crear carpetas
@@ -265,10 +270,16 @@ def clear_server_cache():
         return jsonify({'error': f'Error limpiando cache: {str(e)}'}), 500
 
 if __name__ == '__main__':
+    # Configuración del servidor usando variables de entorno
+    HOST = os.getenv('HOST', '0.0.0.0')
+    PORT = int(os.getenv('PORT', 5000))
+    DEBUG = os.getenv('FLASK_DEBUG', 'true').lower() == 'true'
+    
     print("🎬 AudioSlash Web Interface")
     print("=" * 40)
-    print("🌐 Abre tu navegador en: http://localhost:5000")
+    print(f"🌐 Abre tu navegador en: http://localhost:{PORT}")
     print("🔄 Presiona Ctrl+C para detener")
+    print(f"🐍 Modo debug: {'Activado' if DEBUG else 'Desactivado'}")
     print("=" * 40)
     
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=DEBUG, host=HOST, port=PORT)
