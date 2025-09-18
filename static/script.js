@@ -206,7 +206,7 @@ function displayAudioList(audios) {
     }
     
     const audioItems = audios.map(audio => `
-        <div class="audio-item">
+        <div class="audio-item" data-filename="${audio.name}">
             <div class="audio-info">
                 <i class="fas fa-music"></i>
                 <div>
@@ -214,13 +214,60 @@ function displayAudioList(audios) {
                     <div class="audio-size">${formatFileSize(audio.size)}</div>
                 </div>
             </div>
-            <a href="${audio.url}" class="download-link" target="_blank">
+            <a href="${audio.url}" class="download-link" onclick="handleDownload('${audio.name}')">
                 <i class="fas fa-download"></i> Descargar
             </a>
         </div>
     `).join('');
     
     audioList.innerHTML = audioItems;
+}
+
+function handleDownload(filename) {
+    // Mostrar mensaje de que se eliminará después de la descarga
+    const audioItem = document.querySelector(`[data-filename="${filename}"]`);
+    if (audioItem) {
+        const downloadLink = audioItem.querySelector('.download-link');
+        downloadLink.innerHTML = '<i class="fas fa-download"></i> Descargando...';
+        downloadLink.style.opacity = '0.6';
+    }
+    
+    // Actualizar lista después de un breve delay (tiempo para que se complete la descarga)
+    setTimeout(() => {
+        loadAudioList();
+        showTemporaryMessage('Archivo descargado y eliminado del servidor por seguridad');
+    }, 2000);
+}
+
+function showTemporaryMessage(message) {
+    // Crear elemento de mensaje temporal
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'temporary-message';
+    messageDiv.textContent = message;
+    messageDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #4CAF50;
+        color: white;
+        padding: 15px 20px;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        z-index: 1000;
+        animation: slideIn 0.3s ease;
+    `;
+    
+    document.body.appendChild(messageDiv);
+    
+    // Eliminar mensaje después de 3 segundos
+    setTimeout(() => {
+        messageDiv.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => {
+            if (messageDiv.parentNode) {
+                messageDiv.parentNode.removeChild(messageDiv);
+            }
+        }, 300);
+    }, 3000);
 }
 
 function formatFileSize(bytes) {

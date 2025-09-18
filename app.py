@@ -148,11 +148,21 @@ def download_audio(filename):
     try:
         audio_path = AUDIO_FOLDER / filename
         if audio_path.exists():
-            return send_file(
+            # Descargar archivo
+            response = send_file(
                 str(audio_path),
                 as_attachment=True,
                 download_name=filename
             )
+            
+            # Eliminar archivo después de descargarlo
+            try:
+                audio_path.unlink()
+                print(f"🗑️ Archivo eliminado después de descarga: {filename}")
+            except Exception as delete_error:
+                print(f"⚠️ No se pudo eliminar {filename}: {delete_error}")
+            
+            return response
         else:
             return jsonify({'error': 'Archivo no encontrado'}), 404
     except Exception as e:
